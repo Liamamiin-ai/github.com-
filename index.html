@@ -1,1 +1,397 @@
+<!doctype html>
+<html lang="sv">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>PPTEST</title>
+  <style>
+    :root{
+      --bg:#0b0b0c;
+      --fg:#f5f5f5;
+      --muted:rgba(245,245,245,.75);
+      --panel:rgba(20,20,22,.65);
+      --stroke:rgba(255,255,255,.14);
+      --btn:#0e0e10;
+      --btnStroke:rgba(255,255,255,.18);
+      --accent:rgba(210,210,210,.9);
+      --shadow: 0 20px 60px rgba(0,0,0,.55);
+      --radius: 18px;
+    }
 
+    *{ box-sizing:border-box; }
+    html,body{ height:100%; }
+    body{
+      margin:0;
+      background: var(--bg);
+      color: var(--fg);
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      overflow-x:hidden;
+    }
+
+    /* ====== “silver glitter / krossad” bakgrund ====== */
+    .bg{
+      position:fixed;
+      inset:0;
+      z-index:-2;
+      background:
+        radial-gradient(1200px 800px at 70% 25%, rgba(255,255,255,.08), transparent 60%),
+        radial-gradient(900px 700px at 25% 65%, rgba(255,255,255,.05), transparent 55%),
+        linear-gradient(180deg, #080809 0%, #0b0b0c 60%, #09090a 100%);
+    }
+    .glitter{
+      position:fixed;
+      inset:-40px;
+      z-index:-1;
+      pointer-events:none;
+      opacity:.35;
+      filter: contrast(130%) brightness(115%);
+      /* krossad/flake känsla via flera lager av “noise” */
+      background-image:
+        radial-gradient(circle at 10% 20%, rgba(255,255,255,.45) 0 1px, transparent 2px),
+        radial-gradient(circle at 70% 30%, rgba(255,255,255,.35) 0 1px, transparent 2px),
+        radial-gradient(circle at 30% 80%, rgba(255,255,255,.30) 0 1px, transparent 2px),
+        radial-gradient(circle at 90% 70%, rgba(255,255,255,.25) 0 1px, transparent 2px);
+      background-size: 140px 140px, 180px 180px, 220px 220px, 260px 260px;
+      mix-blend-mode: screen;
+      animation: drift 14s ease-in-out infinite alternate;
+    }
+    @keyframes drift{
+      from{ transform: translate3d(-12px,-8px,0) rotate(-0.25deg); }
+      to  { transform: translate3d(12px,10px,0) rotate(0.25deg); }
+    }
+    /* extra “krossad” sheen */
+    .shards{
+      position:fixed;
+      inset:0;
+      z-index:-1;
+      pointer-events:none;
+      opacity:.22;
+      background:
+        conic-gradient(from 220deg at 40% 30%, transparent 0 20%, rgba(255,255,255,.14) 22% 26%, transparent 28% 60%, rgba(255,255,255,.08) 62% 66%, transparent 68% 100%),
+        conic-gradient(from 40deg at 72% 62%, transparent 0 35%, rgba(255,255,255,.12) 36% 38%, transparent 40% 75%, rgba(255,255,255,.09) 76% 78%, transparent 80% 100%);
+      filter: blur(.3px);
+      mix-blend-mode: screen;
+    }
+
+    /* ====== layout ====== */
+    header{
+      position:sticky;
+      top:0;
+      z-index:10;
+      backdrop-filter: blur(10px);
+      background: rgba(8,8,9,.55);
+      border-bottom:1px solid var(--stroke);
+    }
+    .wrap{
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 18px 18px;
+    }
+    .topbar{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+    }
+    .brand{
+      display:flex;
+      align-items:center;
+      gap:12px;
+      min-width:0;
+    }
+    .logo{
+      width:44px;height:44px;
+      border-radius:14px;
+      background: rgba(255,255,255,.06);
+      border: 1px solid rgba(255,255,255,.14);
+      display:grid;
+      place-items:center;
+      box-shadow: 0 10px 30px rgba(0,0,0,.35);
+    }
+    .logo svg{ width:26px; height:26px; opacity:.92; }
+    .brand h1{
+      margin:0;
+      font-size: 14px;
+      letter-spacing:.22em;
+      text-transform:uppercase;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+    .brand small{
+      display:block;
+      margin-top:3px;
+      font-size:12px;
+      color: var(--muted);
+      letter-spacing:.06em;
+    }
+
+    .btn{
+      appearance:none;
+      border:1px solid var(--btnStroke);
+      background: var(--btn);
+      color: var(--fg);
+      padding: 10px 14px;
+      border-radius: 14px;
+      cursor:pointer;
+      transition: transform .12s ease, background .12s ease, border-color .12s ease;
+      font-weight:600;
+      letter-spacing:.03em;
+    }
+    .btn:hover{ transform: translateY(-1px); border-color: rgba(255,255,255,.28); }
+    .btn:active{ transform: translateY(0px) scale(.99); }
+    .btn.secondary{
+      background: rgba(255,255,255,.06);
+    }
+
+    main{ padding: 34px 0 60px; }
+    .hero{
+      border: 1px solid var(--stroke);
+      border-radius: var(--radius);
+      background: linear-gradient(180deg, rgba(255,255,255,.07), rgba(255,255,255,.03));
+      box-shadow: var(--shadow);
+      overflow:hidden;
+    }
+    .heroInner{
+      padding: 28px;
+      display:grid;
+      grid-template-columns: 1.2fr .8fr;
+      gap: 22px;
+    }
+    @media (max-width: 860px){
+      .heroInner{ grid-template-columns: 1fr; }
+    }
+    .title{
+      margin:0;
+      font-size: 40px;
+      letter-spacing:.08em;
+      text-transform:uppercase;
+      line-height:1.05;
+    }
+    .lead{
+      margin: 10px 0 0;
+      color: var(--muted);
+      font-size: 14.5px;
+      line-height:1.6;
+      max-width: 60ch;
+    }
+    .ctaRow{
+      margin-top: 18px;
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+
+    .card{
+      border:1px solid var(--stroke);
+      border-radius: var(--radius);
+      background: rgba(10,10,12,.55);
+      padding: 16px;
+      min-height: 180px;
+    }
+    .card h3{
+      margin:0 0 10px;
+      font-size: 13px;
+      letter-spacing:.18em;
+      text-transform:uppercase;
+      color: var(--accent);
+    }
+    .gallery{
+      display:grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+    }
+    @media (max-width: 860px){
+      .gallery{ grid-template-columns: repeat(2, 1fr); }
+    }
+    .thumb{
+      border-radius: 14px;
+      border: 1px solid rgba(255,255,255,.14);
+      overflow:hidden;
+      background: rgba(255,255,255,.04);
+      aspect-ratio: 1 / 1;
+      display:grid;
+      place-items:center;
+      color: rgba(255,255,255,.55);
+      font-size: 12px;
+    }
+    .thumb img{
+      width:100%;
+      height:100%;
+      object-fit:cover;
+      display:block;
+    }
+
+    footer{
+      border-top:1px solid var(--stroke);
+      background: rgba(8,8,9,.45);
+    }
+    footer .wrap{
+      padding: 18px;
+      color: rgba(255,255,255,.55);
+      font-size: 12px;
+      letter-spacing:.04em;
+    }
+
+    /* ====== Admin drawer ====== */
+    .drawerBackdrop{
+      position:fixed;
+      inset:0;
+      background: rgba(0,0,0,.55);
+      backdrop-filter: blur(6px);
+      display:none;
+      z-index: 50;
+    }
+    .drawerBackdrop.open{ display:block; }
+    .drawer{
+      position:fixed;
+      top:0; right:0;
+      width: min(420px, 92vw);
+      height: 100%;
+      background: rgba(12,12,14,.92);
+      border-left: 1px solid rgba(255,255,255,.12);
+      box-shadow: 0 30px 90px rgba(0,0,0,.7);
+      transform: translateX(102%);
+      transition: transform .18s ease;
+      z-index: 60;
+      display:flex;
+      flex-direction:column;
+    }
+    .drawer.open{ transform: translateX(0); }
+    .drawerHeader{
+      padding: 16px;
+      border-bottom:1px solid rgba(255,255,255,.12);
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+    }
+    .drawerHeader strong{
+      letter-spacing:.16em;
+      text-transform:uppercase;
+      font-size:12px;
+    }
+    .drawerBody{
+      padding: 16px;
+      overflow:auto;
+    }
+    label{
+      display:block;
+      font-size:12px;
+      color: rgba(255,255,255,.7);
+      margin: 12px 0 6px;
+      letter-spacing:.06em;
+    }
+    input[type="text"], textarea{
+      width:100%;
+      padding: 10px 12px;
+      border-radius: 14px;
+      border:1px solid rgba(255,255,255,.14);
+      background: rgba(255,255,255,.06);
+      color: var(--fg);
+      outline:none;
+    }
+    textarea{ min-height: 110px; resize: vertical; }
+    .row{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      margin-top: 12px;
+    }
+    .hint{
+      margin-top: 10px;
+      font-size: 12px;
+      color: rgba(255,255,255,.55);
+      line-height:1.5;
+    }
+    .danger{
+      border-color: rgba(255,80,80,.35) !important;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="bg"></div>
+  <div class="glitter"></div>
+  <div class="shards"></div>
+
+  <header>
+    <div class="wrap">
+      <div class="topbar">
+        <div class="brand">
+          <div class="logo" aria-label="PPTEST logo">
+            <!-- enkel logomark -->
+            <svg viewBox="0 0 24 24" fill="none">
+              <path d="M7 6h6.2c2.2 0 3.8 1.4 3.8 3.5S15.4 13 13.2 13H10v5H7V6Z" stroke="white" opacity=".9" stroke-width="1.8"/>
+              <path d="M11.2 6H17c2.2 0 3.8 1.4 3.8 3.5S19.2 13 17 13h-2.6" stroke="white" opacity=".65" stroke-width="1.8"/>
+            </svg>
+          </div>
+          <div>
+            <h1>PPTEST</h1>
+            <small>Svart • Vit • Silver</small>
+          </div>
+        </div>
+
+        <button class="btn" id="openAdmin" type="button">Meny</button>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <div class="wrap">
+      <section class="hero">
+        <div class="heroInner">
+          <div>
+            <h2 class="title" id="siteTitle">PPTEST</h2>
+            <p class="lead" id="siteText">
+              Under construction. Byt text och ladda upp bilder via “Meny”.
+            </p>
+            <div class="ctaRow">
+              <button class="btn" type="button" id="btnPrimary">Knapp 1</button>
+              <button class="btn secondary" type="button" id="btnSecondary">Knapp 2</button>
+            </div>
+          </div>
+
+          <div class="card">
+            <h3>Bilder</h3>
+            <div class="gallery" id="gallery">
+              <div class="thumb">Ingen bild</div>
+              <div class="thumb">Ingen bild</div>
+              <div class="thumb">Ingen bild</div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <footer>
+    <div class="wrap">
+      © <span id="year"></span> PPTEST — GitHub Pages (gratis)
+    </div>
+  </footer>
+
+  <!-- Admin drawer -->
+  <div class="drawerBackdrop" id="backdrop" aria-hidden="true"></div>
+  <aside class="drawer" id="drawer" aria-label="Admin meny" aria-hidden="true">
+    <div class="drawerHeader">
+      <strong>Admin meny</strong>
+      <button class="btn secondary" id="closeAdmin" type="button">Stäng</button>
+    </div>
+
+    <div class="drawerBody">
+      <label for="titleInput">Titel</label>
+      <input id="titleInput" type="text" placeholder="Ex: PPTEST" />
+
+      <label for="textInput">Text</label>
+      <textarea id="textInput" placeholder="Skriv info här..."></textarea>
+
+      <label for="imgInput">Ladda upp bilder (max 3)</label>
+      <input id="imgInput" type="file" accept="image/*" multiple />
+
+      <div class="row">
+        <button class="btn" id="saveBtn" type="button">Spara</button>
+        <button class="btn secondary" id="resetBtn" type="button">Återställ</button>
+      </div>
+
+      <p class="hint">
