@@ -395,3 +395,120 @@
       </div>
 
       <p class="hint">
+</p>
+    </div>
+  </aside>
+
+  <script>
+    const KEY = "pptest_site_v1";
+
+    const qs = (s) => document.querySelector(s);
+
+    const siteTitle = qs("#siteTitle");
+    const siteText = qs("#siteText");
+    const gallery = qs("#gallery");
+
+    const titleInput = qs("#titleInput");
+    const textInput  = qs("#textInput");
+    const imgInput   = qs("#imgInput");
+
+    const backdrop = qs("#backdrop");
+    const drawer = qs("#drawer");
+
+    const openAdmin = () => {
+      backdrop.classList.add("open");
+      drawer.classList.add("open");
+      backdrop.setAttribute("aria-hidden","false");
+      drawer.setAttribute("aria-hidden","false");
+    };
+    const closeAdmin = () => {
+      backdrop.classList.remove("open");
+      drawer.classList.remove("open");
+      backdrop.setAttribute("aria-hidden","true");
+      drawer.setAttribute("aria-hidden","true");
+    };
+
+    qs("#openAdmin").addEventListener("click", openAdmin);
+    qs("#closeAdmin").addEventListener("click", closeAdmin);
+    backdrop.addEventListener("click", closeAdmin);
+
+    const renderGallery = (images) => {
+      gallery.innerHTML = "";
+      const slots = 3;
+      for (let i=0; i<slots; i++){
+        const wrap = document.createElement("div");
+        wrap.className = "thumb";
+        if (images && images[i]){
+          const img = document.createElement("img");
+          img.src = images[i];
+          img.alt = "uppladdad bild " + (i+1);
+          wrap.appendChild(img);
+        } else {
+          wrap.textContent = "Ingen bild";
+        }
+        gallery.appendChild(wrap);
+      }
+    };
+
+    const load = () => {
+      try{
+        const raw = localStorage.getItem(KEY);
+        if (!raw) {
+          renderGallery([]);
+          return;
+        }
+        const data = JSON.parse(raw);
+        if (data.title) siteTitle.textContent = data.title;
+        if (data.text)  siteText.textContent  = data.text;
+        renderGallery(data.images || []);
+
+        titleInput.value = data.title || "";
+        textInput.value = data.text || "";
+      } catch (e){
+        renderGallery([]);
+      }
+    };
+
+    const readFilesAsDataURLs = async (fileList) => {
+      const files = Array.from(fileList || []).slice(0,3);
+      const readers = files.map(file => new Promise((resolve, reject) => {
+        const r = new FileReader();
+        r.onload = () => resolve(r.result);
+        r.onerror = reject;
+        r.readAsDataURL(file);
+      }));
+      return Promise.all(readers);
+    };
+
+    qs("#saveBtn").addEventListener("click", async () => {
+      const title = titleInput.value.trim() || "PPTEST";
+      const text  = textInput.value.trim() || "Under construction.";
+      const images = await readFilesAsDataURLs(imgInput.files);
+
+      const data = { title, text, images };
+      localStorage.setItem(KEY, JSON.stringify(data));
+
+      siteTitle.textContent = title;
+      siteText.textContent  = text;
+      renderGallery(images);
+
+      imgInput.value = "";
+      closeAdmin();
+    });
+
+    qs("#resetBtn").addEventListener("click", () => {
+      localStorage.removeItem(KEY);
+      siteTitle.textContent = "PPTEST";
+      siteText.textContent  = "Under construction. Byt text och ladda upp bilder via “Meny”.";
+      renderGallery([]);
+      titleInput.value = "";
+      textInput.value = "";
+      imgInput.value = "";
+      closeAdmin();
+    });
+
+    qs("#year").textContent = new Date().getFullYear();
+    load();
+  </script>
+</body>
+</html>
